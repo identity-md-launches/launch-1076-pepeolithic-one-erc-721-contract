@@ -219,6 +219,11 @@ contract PepeolithicLifecycleHandler is PepeolithicSetup {
         assertLe(purchases + swept, 400);
         assertEq(claims + leftovers, freeTaken);
         assertLe(freeTaken, 335);
+        assertEq(
+            pepeolithic.nextFree(),
+            freeTaken == 0 ? 1 : freeIds[freeTaken - 1] + 1,
+            "failed operations cannot advance the shared free-piece cursor"
+        );
         assertEq(coin.balanceOf(DEAD), paid, "every charge reaches dead");
         assertEq(coin.balanceOf(address(pepeolithic)), 0, "no custody in any normal call sequence");
         assertEq(address(pepeolithic).balance, 0);
@@ -229,6 +234,7 @@ contract PepeolithicLifecycleHandler is PepeolithicSetup {
             address who = _actor(i);
             assertEq(pepeolithic.balanceOf(who), balances[who]);
             assertEq(coin.balanceOf(who), FUNDS - spent[who]);
+            assertEq(coin.allowance(who, address(pepeolithic)), FUNDS - spent[who]);
             assertEq(pepeolithic.claimed(who), seatsClaimed[i]);
             totalBalances += pepeolithic.balanceOf(who);
         }
